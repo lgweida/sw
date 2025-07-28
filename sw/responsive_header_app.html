@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Header App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo Section -->
+                <div class="flex items-center">
+                    <a href="#" class="flex items-center space-x-3 group">
+                        <img src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=300" 
+                             alt="Your Company" 
+                             class="h-8 w-8 transition-transform duration-200 group-hover:scale-110">
+                        <span class="text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">
+                            Your Company
+                        </span>
+                    </a>
+                </div>
+
+                <!-- Navigation (Desktop) -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#" class="text-gray-700 hover:text-indigo-600 font-medium transition-colors duration-200">Dashboard</a>
+                    <a href="#" class="text-gray-700 hover:text-indigo-600 font-medium transition-colors duration-200">Projects</a>
+                    <a href="#" class="text-gray-700 hover:text-indigo-600 font-medium transition-colors duration-200">Team</a>
+                    <a href="#" class="text-gray-700 hover:text-indigo-600 font-medium transition-colors duration-200">Calendar</a>
+                </nav>
+
+                <!-- Right Section -->
+                <div class="flex items-center space-x-4">
+                    <!-- Search Button -->
+                    <button type="button" 
+                            class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200"
+                            onclick="toggleSearch()">
+                        <span class="sr-only">Search</span>
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </button>
+
+                    <!-- Notifications Button -->
+                    <button type="button" 
+                            class="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200"
+                            onclick="toggleNotifications()">
+                        <span class="sr-only">View notifications</span>
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                        </svg>
+                        <!-- Notification Badge -->
+                        <span class="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center" id="notificationBadge">3</span>
+                    </button>
+
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <button type="button" 
+                                class="flex items-center space-x-2 p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200"
+                                onclick="toggleProfile()">
+                            <img class="h-8 w-8 rounded-full object-cover" 
+                                 src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" 
+                                 alt="Profile">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        
+                        <!-- Profile Dropdown Menu -->
+                        <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                            <div class="py-2">
+                                <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200">Your Profile</a>
+                                <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200">Settings</a>
+                                <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200">Billing</a>
+                                <hr class="my-2">
+                                <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200">Sign out</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Menu Button -->
+                    <button type="button" 
+                            class="md:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200"
+                            onclick="toggleMobileMenu()">
+                        <span class="sr-only">Open menu</span>
+                        <svg id="menuIcon" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <svg id="closeIcon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-white border-t border-gray-200">
+            <div class="px-4 py-2 space-y-1">
+                <a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">Dashboard</a>
+                <a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">Projects</a>
+                <a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">Team</a>
+                <a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">Calendar</a>
+            </div>
+        </div>
+
+        <!-- Search Bar (Expandable) -->
+        <div id="searchBar" class="hidden bg-gray-50 border-t border-gray-200 px-4 py-3">
+            <div class="max-w-md mx-auto">
+                <div class="relative">
+                    <input type="text" 
+                           placeholder="Search..." 
+                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Notifications Panel -->
+    <div id="notificationsPanel" class="hidden fixed top-16 right-4 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
+        <div class="p-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Notifications</h3>
+        </div>
+        <div class="divide-y divide-gray-200">
+            <div class="p-4 hover:bg-gray-50 transition-colors duration-200">
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0">
+                        <div class="h-2 w-2 bg-blue-500 rounded-full mt-2"></div>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-900">New project assigned to you</p>
+                        <p class="text-xs text-gray-500 mt-1">2 minutes ago</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 hover:bg-gray-50 transition-colors duration-200">
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0">
+                        <div class="h-2 w-2 bg-green-500 rounded-full mt-2"></div>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-900">Meeting reminder: Team standup</p>
+                        <p class="text-xs text-gray-500 mt-1">15 minutes ago</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 hover:bg-gray-50 transition-colors duration-200">
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0">
+                        <div class="h-2 w-2 bg-yellow-500 rounded-full mt-2"></div>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-900">System maintenance scheduled</p>
+                        <p class="text-xs text-gray-500 mt-1">1 hour ago</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="p-4 border-t border-gray-200">
+            <button class="w-full text-center text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                View all notifications
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Welcome to Your Dashboard</h1>
+            <p class="text-gray-600 mb-6">This is a modern, responsive header component built with Tailwind CSS. Try interacting with the navigation elements above!</p>
+            
+            <!-- Feature Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 p-6 rounded-lg border border-indigo-200">
+                    <div class="flex items-center mb-4">
+                        <svg class="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        <h3 class="text-lg font-semibold text-indigo-900 ml-3">Analytics</h3>
+                    </div>
+                    <p class="text-indigo-700">Track your performance with detailed analytics and insights.</p>
+                </div>
+                
+                <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg border border-green-200">
+                    <div class="flex items-center mb-4">
+                        <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <h3 class="text-lg font-semibold text-green-900 ml-3">Team Management</h3>
+                    </div>
+                    <p class="text-green-700">Collaborate effectively with your team members and manage projects.</p>
+                </div>
+                
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200">
+                    <div class="flex items-center mb-4">
+                        <svg class="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <h3 class="text-lg font-semibold text-purple-900 ml-3">Settings</h3>
+                    </div>
+                    <p class="text-purple-700">Customize your experience with advanced settings and preferences.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Toggle functions for interactive elements
+        function toggleNotifications() {
+            const panel = document.getElementById('notificationsPanel');
+            const badge = document.getElementById('notificationBadge');
+            
+            if (panel.classList.contains('hidden')) {
+                // Close other panels
+                closeAllPanels();
+                panel.classList.remove('hidden');
+                // Hide notification badge when opened
+                badge.style.display = 'none';
+            } else {
+                panel.classList.add('hidden');
+                // Show badge again when closed
+                badge.style.display = 'flex';
+            }
+        }
+
+        function toggleProfile() {
+            const dropdown = document.getElementById('profileDropdown');
+            
+            if (dropdown.classList.contains('hidden')) {
+                closeAllPanels();
+                dropdown.classList.remove('hidden');
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        }
+
+        function toggleSearch() {
+            const searchBar = document.getElementById('searchBar');
+            const input = searchBar.querySelector('input');
+            
+            if (searchBar.classList.contains('hidden')) {
+                closeAllPanels();
+                searchBar.classList.remove('hidden');
+                input.focus();
+            } else {
+                searchBar.classList.add('hidden');
+            }
+        }
+
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const menuIcon = document.getElementById('menuIcon');
+            const closeIcon = document.getElementById('closeIcon');
+            
+            if (mobileMenu.classList.contains('hidden')) {
+                closeAllPanels();
+                mobileMenu.classList.remove('hidden');
+                menuIcon.classList.add('hidden');
+                closeIcon.classList.remove('hidden');
+            } else {
+                mobileMenu.classList.add('hidden');
+                menuIcon.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+            }
+        }
+
+        function closeAllPanels() {
+            document.getElementById('notificationsPanel').classList.add('hidden');
+            document.getElementById('profileDropdown').classList.add('hidden');
+            document.getElementById('searchBar').classList.add('hidden');
+            document.getElementById('mobileMenu').classList.add('hidden');
+            
+            // Reset mobile menu icons
+            document.getElementById('menuIcon').classList.remove('hidden');
+            document.getElementById('closeIcon').classList.add('hidden');
+        }
+
+        // Close panels when clicking outside
+        document.addEventListener('click', function(event) {
+            const clickedElement = event.target;
+            const isInsidePanel = clickedElement.closest('#notificationsPanel') || 
+                                 clickedElement.closest('#profileDropdown') || 
+                                 clickedElement.closest('#searchBar') || 
+                                 clickedElement.closest('#mobileMenu');
+            const isButton = clickedElement.closest('button');
+            
+            if (!isInsidePanel && !isButton) {
+                closeAllPanels();
+                // Show notification badge again if notifications panel was closed
+                document.getElementById('notificationBadge').style.display = 'flex';
+            }
+        });
+
+        // Close search bar on escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeAllPanels();
+                document.getElementById('notificationBadge').style.display = 'flex';
+            }
+        });
+    </script>
+</body>
+</html>

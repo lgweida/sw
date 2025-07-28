@@ -1,0 +1,39 @@
+[
+  {
+    "section_title": "REST API - Website Traffic API",
+    "endpoints": [
+      {
+        "title": "Traffic & Engagement - Total Traffic",
+        "method": null,
+        "href": "/reference/visits",
+        "subpages": [
+          {
+            "title": "Visits - Total (Desktop & Mobile)",
+            "method": "get",
+            "href": "/reference/visits"
+          },
+          {
+            "title": "Pages Per Visit - Total (Desktop & Mobile)",
+            "method": "get",
+            "href": "/reference/pages-per-visit"
+          },
+          {
+            "title": "Average Visit Duration - Total (Desktop & Mobile)",
+            "method": "get",
+            "href": "/reference/average-visit-duration-all-traffic"
+          },
+          {
+            "title": "Bounce Rate - Total (Desktop & Mobile)",
+            "method": "get",
+            "href": "/reference/bounce-rate"
+          },
+          {
+            "title": "Page Views - Total (Desktop & Mobile)",
+            "method": "get",
+            "href": "/reference/page-views"
+          }
+        ]
+      }
+    ]
+  }
+]

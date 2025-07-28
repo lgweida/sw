@@ -1,0 +1,27 @@
+[
+  {
+    "section_title": "REST API - Website Traffic API",
+    "endpoints": [
+      {
+        "title": "Traffic & Engagement - Total Traffic",
+        "method": "get",
+        "href": "/reference/visits",
+        "subpages": [
+          {
+            "title": "Visits - Total (Desktop & Mobile)",
+            "method": "get",
+            "href": "/reference/visits"
+          },
+          {
+            "title": "Pages Per Visit - Total (Desktop & Mobile)",
+            "method": "get",
+            "href": "/reference/pages-per-visit"
+          }
+          // ... more subpages
+        ]
+      },
+      // ... more endpoints
+    ]
+  },
+  // ... more sections
+]
