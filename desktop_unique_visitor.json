@@ -1,0 +1,120 @@
+{
+  "meta": {
+    "request": {
+      "granularity": "Monthly",
+      "main_domain_only": false,
+      "mtd": false,
+      "show_verified": false,
+      "state": null,
+      "format": "json",
+      "domain": "openai.com",
+      "start_date": "2023-06-01",
+      "end_date": "2025-06-30",
+      "country": "world"
+    },
+    "status": "Success",
+    "last_updated": "2025-06-30"
+  },
+  "unique_visitors": [
+    {
+      "date": "2023-06-01",
+      "unique_visitors": 112243860.783
+    },
+    {
+      "date": "2023-07-01",
+      "unique_visitors": 101305505.878
+    },
+    {
+      "date": "2023-08-01",
+      "unique_visitors": 101810798.94
+    },
+    {
+      "date": "2023-09-01",
+      "unique_visitors": 108653762.207
+    },
+    {
+      "date": "2023-10-01",
+      "unique_visitors": 114154250.755
+    },
+    {
+      "date": "2023-11-01",
+      "unique_visitors": 119849382.313
+    },
+    {
+      "date": "2023-12-01",
+      "unique_visitors": 115023645.058
+    },
+    {
+      "date": "2024-01-01",
+      "unique_visitors": 115666818.505
+    },
+    {
+      "date": "2024-02-01",
+      "unique_visitors": 123726534.079
+    },
+    {
+      "date": "2024-03-01",
+      "unique_visitors": 126757919.978
+    },
+    {
+      "date": "2024-04-01",
+      "unique_visitors": 131929939.371
+    },
+    {
+      "date": "2024-05-01",
+      "unique_visitors": 146871590.491
+    },
+    {
+      "date": "2024-06-01",
+      "unique_visitors": 103626996.244
+    },
+    {
+      "date": "2024-07-01",
+      "unique_visitors": 97188527.52
+    },
+    {
+      "date": "2024-08-01",
+      "unique_visitors": 105588531.88
+    },
+    {
+      "date": "2024-09-01",
+      "unique_visitors": 121809831.13
+    },
+    {
+      "date": "2024-10-01",
+      "unique_visitors": 119795321.71
+    },
+    {
+      "date": "2024-11-01",
+      "unique_visitors": 124508478.03
+    },
+    {
+      "date": "2024-12-01",
+      "unique_visitors": 123451336.58
+    },
+    {
+      "date": "2025-01-01",
+      "unique_visitors": 127828933.63
+    },
+    {
+      "date": "2025-02-01",
+      "unique_visitors": 121996677.26
+    },
+    {
+      "date": "2025-03-01",
+      "unique_visitors": 126433341.01
+    },
+    {
+      "date": "2025-04-01",
+      "unique_visitors": 139336237.18
+    },
+    {
+      "date": "2025-05-01",
+      "unique_visitors": 130159765.19
+    },
+    {
+      "date": "2025-06-01",
+      "unique_visitors": 132401285.94
+    }
+  ]
+}

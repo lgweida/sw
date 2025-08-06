@@ -30,7 +30,11 @@ def calculate_t3m_metrics(df):
     
     df[t3m_col] = df[bounce_rate_col].rolling(3, min_periods=1).mean()
     
-    # Calculate Q/Q % change (compared to previous quarter's T3M)
+    # Calculate M/M % change (compared to previous month's T3M)
+    mm_col = 'openai.com - Bounce Rate (T3M) M/M %'
+    df[mm_col] = df[t3m_col].pct_change(periods=1) * 100
+    # Calculate M/M % change (compared to previous month's T3M)
+
     qq_col = 'openai.com - Bounce Rate (T3M) Q/Q %'
     df[qq_col] = df[t3m_col].pct_change(periods=3) * 100
     
@@ -65,5 +69,5 @@ print (df)
 df = calculate_t3m_metrics(df)
 
 print("\nDataFrame After Adding New Data:")
-print(df[['Date', 'openai.com - Bounce Rate', 'openai.com - Bounce Rate (T3M)',
+print(df[['Date', 'openai.com - Bounce Rate', 'openai.com - Bounce Rate (T3M)', 'openai.com - Bounce Rate (T3M) M/M %',
           'openai.com - Bounce Rate (T3M) Q/Q %', 'openai.com - Bounce Rate (T3M) Y/Y %']].tail(20))
