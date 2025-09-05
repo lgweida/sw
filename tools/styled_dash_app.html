@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-6 py-8">
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-chart-line text-blue-600 mr-3"></i>
+                Data Dashboard
+            </h1>
+            <p class="text-gray-600 text-lg">Monitor and analyze your data in real-time</p>
+        </header>
+
+        <!-- Control Panel -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800 mb-2">Data Controls</h2>
+                    <p class="text-gray-600">Manage your data updates and refresh cycles</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Manual Update Button -->
+                    <button 
+                        id="update-button"
+                        class="group relative bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center space-x-2"
+                        title="Click to manually fetch and update the data from the external source"
+                    >
+                        <i class="fas fa-sync-alt transition-transform duration-300 group-hover:rotate-180"></i>
+                        <span>Manual Update</span>
+                        
+                        <!-- Tooltip -->
+                        <div class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gray-900 text-white text-sm rounded-lg py-2 px-3 whitespace-nowrap z-10">
+                            Click to manually fetch and update data
+                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                    </button>
+                    
+                    <!-- Status Indicator -->
+                    <div class="flex items-center space-x-2">
+                        <div id="status-dot" class="w-3 h-3 rounded-full bg-gray-400 transition-colors duration-300"></div>
+                        <span id="status-text" class="text-sm font-medium text-gray-600">Ready</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Message -->
+        <div id="update-status" class="mb-6 opacity-0 transition-all duration-500 transform translate-y-2">
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center space-x-3">
+                <i class="fas fa-info-circle text-blue-600"></i>
+                <span class="text-blue-800 font-medium" id="status-message">Click the button to update data.</span>
+            </div>
+        </div>
+
+        <!-- Chart Container -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <div class="mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-2">Posts by User ID</h2>
+                <p class="text-gray-600">Distribution of posts across different users</p>
+            </div>
+            
+            <div class="relative h-96">
+                <canvas id="data-chart" class="w-full h-full"></canvas>
+                
+                <!-- No Data State -->
+                <div id="no-data-state" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 rounded-xl">
+                    <div class="text-center">
+                        <i class="fas fa-chart-bar text-6xl text-gray-300 mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gray-600 mb-2">No Data Available</h3>
+                        <p class="text-gray-500 mb-4">Click 'Manual Update' to fetch and display data</p>
+                        <div class="w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full mx-auto"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+            <div class="bg-white rounded-2xl p-8 flex flex-col items-center space-y-4 shadow-2xl">
+                <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-gray-700 font-medium">Updating data...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chart = null;
+        let clickCount = 0;
+        
+        // Sample data for demonstration
+        const sampleData = [
+            { userId: 1, count: 12 },
+            { userId: 2, count: 8 },
+            { userId: 3, count: 15 },
+            { userId: 4, count: 6 },
+            { userId: 5, count: 10 },
+            { userId: 6, count: 9 },
+            { userId: 7, count: 14 },
+            { userId: 8, count: 7 }
+        ];
+
+        // Initialize chart
+        function initChart() {
+            const ctx = document.getElementById('data-chart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Post Count',
+                        data: [],
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(156, 163, 175, 0.2)',
+                            },
+                            ticks: {
+                                color: '#6B7280'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#6B7280'
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutCubic'
+                    }
+                }
+            });
+        }
+
+        // Update chart with new data
+        function updateChart(data) {
+            if (chart) {
+                chart.data.labels = data.map(item => `User ${item.userId}`);
+                chart.data.datasets[0].data = data.map(item => item.count);
+                chart.update('active');
+                
+                document.getElementById('no-data-state').style.display = 'none';
+            }
+        }
+
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('update-status');
+            const statusMessage = document.getElementById('status-message');
+            const statusIcon = statusDiv.querySelector('i');
+            
+            statusMessage.textContent = message;
+            
+            // Update colors based on type
+            const colorClasses = {
+                info: 'bg-blue-50 border-blue-200 text-blue-800',
+                success: 'bg-green-50 border-green-200 text-green-800',
+                loading: 'bg-yellow-50 border-yellow-200 text-yellow-800'
+            };
+            
+            const iconClasses = {
+                info: 'fas fa-info-circle text-blue-600',
+                success: 'fas fa-check-circle text-green-600',
+                loading: 'fas fa-spinner fa-spin text-yellow-600'
+            };
+            
+            statusDiv.firstElementChild.className = `${colorClasses[type]} border rounded-xl p-4 flex items-center space-x-3`;
+            statusIcon.className = iconClasses[type];
+            
+            statusDiv.style.opacity = '1';
+            statusDiv.style.transform = 'translateY(0)';
+        }
+
+        // Update status indicator
+        function updateStatusIndicator(status) {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            
+            const statusConfig = {
+                ready: { color: 'bg-gray-400', text: 'Ready' },
+                loading: { color: 'bg-yellow-400', text: 'Updating' },
+                success: { color: 'bg-green-400', text: 'Updated' },
+                error: { color: 'bg-red-400', text: 'Error' }
+            };
+            
+            const config = statusConfig[status];
+            dot.className = `w-3 h-3 rounded-full transition-colors duration-300 ${config.color}`;
+            text.textContent = config.text;
+        }
+
+        // Simulate data update
+        function simulateDataUpdate() {
+            clickCount++;
+            
+            // Show loading state
+            updateStatusIndicator('loading');
+            showStatus('Fetching data from external source...', 'loading');
+            document.getElementById('loading-overlay').style.opacity = '1';
+            document.getElementById('loading-overlay').style.pointerEvents = 'auto';
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                // Hide loading
+                document.getElementById('loading-overlay').style.opacity = '0';
+                document.getElementById('loading-overlay').style.pointerEvents = 'none';
+                
+                // Update with sample data (in real app, this would come from your data_fetcher.py)
+                updateChart(sampleData);
+                updateStatusIndicator('success');
+                showStatus('Data updated manually!', 'success');
+                
+                // Reset status after 3 seconds
+                setTimeout(() => {
+                    updateStatusIndicator('ready');
+                }, 3000);
+            }, 1500);
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            initChart();
+            
+            document.getElementById('update-button').addEventListener('click', simulateDataUpdate);
+        });
+    </script>
+</body>
+</html>
