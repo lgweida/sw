@@ -1,0 +1,6 @@
+Flask==2.3.3
+celery==5.3.4
+SQLAlchemy==2.0.20
+Flask-SQLAlchemy==3.0.5
+sqlalchemy-celery==0.3.0
+eventlet==0.33.3

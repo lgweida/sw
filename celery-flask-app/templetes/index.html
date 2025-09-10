@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celery Job Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .job { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .pending { background-color: #fff3cd; }
+        .started { background-color: #cce5ff; }
+        .completed { background-color: #d4edda; }
+        .form-group { margin: 10px 0; }
+        button { padding: 8px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0069d9; }
+    </style>
+</head>
+<body>
+    <h1>Celery Job Manager</h1>
+    
+    <h2>Create New Job</h2>
+    <form action="/job" method="post">
+        <div class="form-group">
+            <label for="name">Job Name:</label>
+            <input type="text" id="name" name="name" placeholder="Enter job name">
+        </div>
+        <div class="form-group">
+            <label for="duration">Duration (seconds):</label>
+            <input type="number" id="duration" name="duration" value="10" min="1" max="60">
+        </div>
+        <button type="submit">Create Long Job</button>
+    </form>
+    
+    <form action="/quick-job" method="post" style="margin-top: 20px;">
+        <div class="form-group">
+            <label for="quick-name">Quick Job Name:</label>
+            <input type="text" id="quick-name" name="name" placeholder="Enter quick job name">
+        </div>
+        <button type="submit">Create Quick Job</button>
+    </form>
+    
+    <h2>Job History</h2>
+    <div id="jobs">
+        {% for job in jobs %}
+        <div class="job {{ job.status }}">
+            <h3>{{ job.name }} <small>({{ job.status }})</small></h3>
+            <p>Task ID: {{ job.task_id }}</p>
+            <p>Created: {{ job.created_at }}</p>
+            {% if job.completed_at %}
+            <p>Completed: {{ job.completed_at }}</p>
+            {% endif %}
+            {% if job.result %}
+            <p>Result: {{ job.result }}</p>
+            {% endif %}
+            <button onclick="checkStatus('{{ job.task_id }}')">Check Status</button>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <script>
+        function checkStatus(taskId) {
+            fetch(`/job/${taskId}`)
+                .then(response => response.json())
+                .then(data => {
+                    alert(`Job Status: ${data.status}\nResult: ${data.result || 'Not available'}`);
+                    location.reload(); // Refresh to update status
+                })
+                .catch(error => console.error('Error:', error));
+        }
+        
+        // Auto-refresh every 10 seconds
+        setInterval(() => {
+            fetch('/jobs')
+                .then(response => response.json())
+                .then(data => {
+                    // Could update the UI without full page reload
+                    // For simplicity, we'll just reload if any jobs are pending/started
+                    const needsRefresh = data.some(job => 
+                        job.status === 'pending' || job.status === 'started');
+                    if (needsRefresh) location.reload();
+                });
+        }, 10000);
+    </script>
+</body>
+</html>
