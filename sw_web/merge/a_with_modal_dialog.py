@@ -1284,25 +1284,19 @@ app.layout = html.Div([
 @app.callback(
     Output("adapter-subtabs-container", "children"),
     Input("network-tabs", "value"),
-    prevent_initial_call=False
+    prevent_initial_call=True
 )
 def update_adapter_subtabs(selected_network):
     if not selected_network or selected_network == 'ALL':
-        return html.Div([
-            html.Label("Select Adapters:", className="block text-sm font-medium text-gray-700 mb-2"),
-            html.Div("Please select a specific network to see available adapters.", 
-                   className="text-gray-500 italic text-sm")
-        ], className="p-3 bg-gray-50 rounded-lg border border-gray-200")
+        return html.Div("Please select a specific network to see available adapters.",
+                        className="text-gray-500 italic text-sm p-3 bg-gray-50 rounded-lg border border-gray-200 h-full")
     
     # Get adapters for the selected network
     adapters = adapter_data.get(selected_network, [])
 
     if not adapters:
-        return html.Div([
-            html.Label("Select Adapters:", className="block text-sm font-medium text-gray-700 mb-2"),
-            html.Div(f"No adapters found for {selected_network}.", 
-                   className="text-gray-500 italic text-sm")
-        ], className="p-3 bg-gray-50 rounded-lg border border-gray-200")
+        return html.Div(f"No adapters found for {selected_network}.",
+                        className="text-gray-500 italic text-sm p-3 bg-gray-50 rounded-lg border border-gray-200 h-full")
 
     # Create options for the dropdown
     options = [{"label": "ALL", "value": "ALL"}]
@@ -1315,6 +1309,17 @@ def update_adapter_subtabs(selected_network):
         clearable=False,
         className="w-full text-sm"
     )
+
+# New callback to reset adapter dropdown value when network changes
+@app.callback(
+    Output("adapter-dropdown", "value", allow_duplicate=True),
+    Input("network-tabs", "value"),
+    prevent_initial_call=True
+)
+def reset_adapter_dropdown(network):
+    """When the network tab changes, reset the adapter dropdown to 'ALL'."""
+    return "ALL"
+
 
 # [Rest of the callbacks remain exactly the same]
 
@@ -1516,23 +1521,30 @@ def update_oms_dropdown(selected_network, client_search, account_search, service
     Output("data-table", "data"),
     Output("summary-output", "children"),
     Input("value-dropdown", "value"),
-    Input("network-tabs", "value"),
+    Input("adapter-dropdown", "value"),
     Input("client-search", "value"),
     Input("account-search", "value"),
     Input("service-type-checklist", "value"),
     Input("current-page", "data"),
     prevent_initial_call=True
 )
-def update_table_and_summary(selected_oms, selected_network, client_search, account_search, service_types_selected, current_page):
-    if current_page != "home":
+def update_table_and_summary(selected_oms, selected_adapter, client_search, account_search, service_types_selected, current_page):
+    # If selected_adapter is None, it means the dropdown doesn't exist yet.
+    # We can treat this as 'ALL' or just wait for the user to make a selection.
+    # We also get the network value from the state, as it's no longer an input
+    if current_page != "home" or selected_adapter is None or dash.callback_context.states.get('network-tabs.value') is None:
         return dash.no_update, dash.no_update
     
+    ctx = dash.callback_context
     if len(df) == 0:
         return [], html.Div("No data available. Please check if client.json exists.", className="text-red-600")
     
     # Start with all data
     filtered_df = df.copy()
     filter_descriptions = []
+
+    # Get the selected network from the state
+    selected_network = ctx.states['network-tabs.value']
     
     # Apply global search filters first (regardless of network/OMS)
     if client_search and client_search.strip():
@@ -1577,6 +1589,17 @@ def update_table_and_summary(selected_oms, selected_network, client_search, acco
     elif selected_oms == "ALL":
         filter_descriptions.append("OMS = ALL (showing all OMS systems)")
     
+    # Apply adapter filter (if a specific network is chosen)
+    # This assumes a relationship between adapter name and the 'Identifier' column.
+    # For example, an adapter 'JEFFOTD_FIX42' might match clients with Identifier 'JEFFOTD'.
+    if selected_network and selected_network != 'ALL' and selected_adapter and selected_adapter != 'ALL':
+        # We'll check if any part of the adapter name is in the Identifier.
+        # This is a flexible matching strategy.
+        # Example: Adapter "I_TRADEWARE_OPT_FIX42" could match Identifier "TRADEWARE"
+        adapter_part_to_match = selected_adapter.split('_')[1] if '_' in selected_adapter else selected_adapter
+        filtered_df = filtered_df[filtered_df['Identifier'].str.contains(adapter_part_to_match, case=False, na=False)]
+        filter_descriptions.append(f"Adapter contains '{adapter_part_to_match}'")
+
     # Calculate statistics for both total and filtered data
     total_clients = len(df)
     filtered_clients = len(filtered_df)
