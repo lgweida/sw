@@ -1296,63 +1296,25 @@ def update_adapter_subtabs(selected_network):
     
     # Get adapters for the selected network
     adapters = adapter_data.get(selected_network, [])
-    
+
     if not adapters:
         return html.Div([
             html.Label("Select Adapters:", className="block text-sm font-medium text-gray-700 mb-2"),
             html.Div(f"No adapters found for {selected_network}.", 
                    className="text-gray-500 italic text-sm")
         ], className="p-3 bg-gray-50 rounded-lg border border-gray-200")
-    
-    # Create adapter sub-tabs with FIXED content-fitting layout
-    adapter_tabs = []
-    # Add "ALL" option first
-    adapter_tabs.append(
-        dcc.Tab(
-            label="ALL",
-            value="ALL",
-            className="adapter-subtab",
-            selected_className="adapter-subtab--selected"
-        )
+
+    # Create options for the dropdown
+    options = [{"label": "ALL", "value": "ALL"}]
+    options.extend([{"label": adapter, "value": adapter} for adapter in adapters])
+
+    return dcc.Dropdown(
+        id="adapter-dropdown",
+        options=options,
+        value="ALL",
+        clearable=False,
+        className="w-full text-sm"
     )
-    
-    # Add individual adapters
-    for adapter in adapters:
-        # Create more compact display names
-        display_name = adapter
-        # Remove common prefixes/suffixes for cleaner display
-        display_name = display_name.replace("I_", "").replace("_FIX42", "").replace("_FIX40", "")
-        display_name = display_name.replace("SellSide42", "").replace("Hub", "")
-        
-        # Further shorten if still too long
-        if len(display_name) > 12:
-            # Try to split by underscore and take first meaningful parts
-            parts = display_name.split('_')
-            if len(parts) > 1:
-                display_name = parts[0] + "_" + parts[1][:3] if len(parts) > 1 else parts[0]
-            else:
-                display_name = display_name[:10] + ".."
-        
-        adapter_tabs.append(
-            dcc.Tab(
-                label=display_name,
-                value=adapter,
-                className="adapter-subtab",
-                selected_className="adapter-subtab--selected",
-                # title=adapter  # Show full name on hover
-            )
-        )
-    
-    return html.Div([
-        html.Div([
-            dcc.Tabs(
-                id="adapter-subtabs",
-                value="ALL",
-                children=adapter_tabs,
-                className="adapter-tabs-container"
-            )
-        ])
-    ])
 
 # [Rest of the callbacks remain exactly the same]
 
