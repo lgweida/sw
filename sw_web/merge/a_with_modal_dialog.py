@@ -910,7 +910,7 @@ def create_dashboard_layout():
 
                     # New container for Adapters
                     html.Div([
-                        html.H3("Adapters", className="text-xl font-semibold mb-2 text-primary"),
+                        html.H3("Adapter", className="text-xl font-semibold mb-2 text-primary"),
                         html.Div(id="adapter-subtabs-container", children=[
                             html.Div("Please select a specific network to see available adapters.",
                                      className="text-gray-500 italic text-sm p-3 bg-gray-50 rounded-lg border border-gray-200 h-full")
@@ -1280,50 +1280,7 @@ app.layout = html.Div([
     # Store to track current page
     dcc.Store(id="current-page", data="home")
 ], className="min-h-screen bg-gray-100")
-# Callback to update adapter sub-tabs based on selected network
-@app.callback(
-    Output("adapter-subtabs-container", "children"),
-    Input("network-tabs", "value"),
-    prevent_initial_call=True
-)
-def update_adapter_subtabs(selected_network):
-    if not selected_network or selected_network == 'ALL':
-        return html.Div("Please select a specific network to see available adapters.",
-                        className="text-gray-500 italic text-sm p-3 bg-gray-50 rounded-lg border border-gray-200 h-full")
-    
-    # Get adapters for the selected network
-    adapters = adapter_data.get(selected_network, [])
 
-    if not adapters:
-        return html.Div(f"No adapters found for {selected_network}.",
-                        className="text-gray-500 italic text-sm p-3 bg-gray-50 rounded-lg border border-gray-200 h-full")
-
-    # Create options for the dropdown
-    options = [{"label": "ALL", "value": "ALL"}]
-    options.extend([{"label": adapter, "value": adapter} for adapter in adapters])
-
-    return dcc.Dropdown(
-        id="adapter-dropdown",
-        options=options,
-        value="ALL",
-        clearable=False,
-        className="w-full text-sm"
-    )
-
-# New callback to reset adapter dropdown value when network changes
-@app.callback(
-    Output("adapter-dropdown", "value", allow_duplicate=True),
-    Input("network-tabs", "value"),
-    prevent_initial_call=True
-)
-def reset_adapter_dropdown(network):
-    """When the network tab changes, reset the adapter dropdown to 'ALL'."""
-    return "ALL"
-
-
-# [Rest of the callbacks remain exactly the same]
-
-# --- New Callbacks for Account Page ---
 
 # Callback to filter the account table
 @app.callback(
@@ -1427,8 +1384,37 @@ def update_page_content(home_clicks, stats_clicks, account_clicks):
     else:
         return create_dashboard_layout(), current_page, home_class, stats_class, account_class
 
-# [Rest of tohe callbacks remain exactly the same - only showing the key adapter callback above]
-# Callback 1: Clear search inputs (only when on home page)
+
+# Callback to update adapter sub-tabs based on selected network
+@app.callback(
+    Output("adapter-subtabs-container", "children"),
+    Input("network-tabs", "value"),
+    prevent_initial_call=True
+)
+def update_adapter_subtabs(selected_network):
+    if not selected_network or selected_network == 'ALL':
+        return html.Div("Please select a specific network to see available adapters.",
+                        className="text-gray-500 italic text-sm p-3 bg-gray-50 rounded-lg border border-gray-200 h-full")
+    
+    # Get adapters for the selected network
+    adapters = adapter_data.get(selected_network, [])
+
+    if not adapters:
+        return html.Div(f"No adapters found for {selected_network}.",
+                        className="text-gray-500 italic text-sm p-3 bg-gray-50 rounded-lg border border-gray-200 h-full")
+
+    # Create options for the dropdown
+    options = [{"label": "ALL", "value": "ALL"}]
+    options.extend([{"label": adapter, "value": adapter} for adapter in adapters])
+
+    return dcc.Dropdown(
+        id="adapter-dropdown",
+        options=options,
+        value="ALL",
+        clearable=False,
+        className="w-full text-sm"
+    )
+
 @app.callback(
     Output("client-search", "value"),
     Output("account-search", "value"),
@@ -1467,8 +1453,9 @@ def clear_search(clear_search_clicks, clear_service_clicks, current_page):
     prevent_initial_call=True
 )
 def update_oms_dropdown(selected_network, client_search, account_search, service_types_selected, current_page):
+    # Guard clause: Do not run if not on the home page
     if current_page != "home":
-        return dash.no_update, dash.no_update
+        raise dash.exceptions.PreventUpdate
     
     if len(df) == 0:
         return [], ""
@@ -1521,21 +1508,18 @@ def update_oms_dropdown(selected_network, client_search, account_search, service
     Output("data-table", "data"),
     Output("summary-output", "children"),
     Input("value-dropdown", "value"),
-    Input("adapter-dropdown", "value"),
-    Input("client-search", "value"),
-    Input("account-search", "value"),
-    Input("service-type-checklist", "value"),
+    Input("network-tabs", "value"),
     Input("current-page", "data"),
-    prevent_initial_call=True
+    State("client-search", "value"),
+    State("account-search", "value"),
+    State("service-type-checklist", "value"),
+    prevent_initial_call=False  # Change to False to allow initial call
 )
-def update_table_and_summary(selected_oms, selected_adapter, client_search, account_search, service_types_selected, current_page):
-    # If selected_adapter is None, it means the dropdown doesn't exist yet.
-    # We can treat this as 'ALL' or just wait for the user to make a selection.
-    # We also get the network value from the state, as it's no longer an input
-    if current_page != "home" or selected_adapter is None or dash.callback_context.states.get('network-tabs.value') is None:
+def update_table_and_summary(selected_oms, selected_network, current_page, client_search, account_search, service_types_selected):
+    # Guard clause: Only run this callback if we are on the home page.
+    if current_page != "home":
         return dash.no_update, dash.no_update
     
-    ctx = dash.callback_context
     if len(df) == 0:
         return [], html.Div("No data available. Please check if client.json exists.", className="text-red-600")
     
@@ -1543,9 +1527,6 @@ def update_table_and_summary(selected_oms, selected_adapter, client_search, acco
     filtered_df = df.copy()
     filter_descriptions = []
 
-    # Get the selected network from the state
-    selected_network = ctx.states['network-tabs.value']
-    
     # Apply global search filters first (regardless of network/OMS)
     if client_search and client_search.strip():
         filtered_df = filtered_df[filtered_df['Client Name'].str.contains(client_search.strip(), case=False, na=False)]
@@ -1588,17 +1569,6 @@ def update_table_and_summary(selected_oms, selected_adapter, client_search, acco
         filter_descriptions.append(f"OMS = {selected_oms}")
     elif selected_oms == "ALL":
         filter_descriptions.append("OMS = ALL (showing all OMS systems)")
-    
-    # Apply adapter filter (if a specific network is chosen)
-    # This assumes a relationship between adapter name and the 'Identifier' column.
-    # For example, an adapter 'JEFFOTD_FIX42' might match clients with Identifier 'JEFFOTD'.
-    if selected_network and selected_network != 'ALL' and selected_adapter and selected_adapter != 'ALL':
-        # We'll check if any part of the adapter name is in the Identifier.
-        # This is a flexible matching strategy.
-        # Example: Adapter "I_TRADEWARE_OPT_FIX42" could match Identifier "TRADEWARE"
-        adapter_part_to_match = selected_adapter.split('_')[1] if '_' in selected_adapter else selected_adapter
-        filtered_df = filtered_df[filtered_df['Identifier'].str.contains(adapter_part_to_match, case=False, na=False)]
-        filter_descriptions.append(f"Adapter contains '{adapter_part_to_match}'")
 
     # Calculate statistics for both total and filtered data
     total_clients = len(df)
@@ -1620,11 +1590,100 @@ def update_table_and_summary(selected_oms, selected_adapter, client_search, acco
     
     return filtered_df.to_dict("records"), summary
 
+# New callback for adapter filtering (only when adapter dropdown exists)
+@app.callback(
+    Output("data-table", "data", allow_duplicate=True),
+    Output("summary-output", "children", allow_duplicate=True),
+    Input("adapter-dropdown", "value"),
+    State("network-tabs", "value"),
+    State("client-search", "value"),
+    State("account-search", "value"),
+    State("service-type-checklist", "value"),
+    State("value-dropdown", "value"),
+    State("current-page", "data"),
+    prevent_initial_call=True
+)
+def update_table_with_adapter_filter(selected_adapter, selected_network, client_search, account_search, service_types_selected, selected_oms, current_page):
+    # Guard clause: Only run this callback if we are on the home page
+    if current_page != "home":
+        raise dash.exceptions.PreventUpdate
+    
+    if len(df) == 0:
+        return [], html.Div("No data available. Please check if client.json exists.", className="text-red-600")
+    
+    # Start with all data
+    filtered_df = df.copy()
+    filter_descriptions = []
+
+    # Apply all the same filters as the main callback
+    if client_search and client_search.strip():
+        filtered_df = filtered_df[filtered_df['Client Name'].str.contains(client_search.strip(), case=False, na=False)]
+        filter_descriptions.append(f"Client Name contains '{client_search.strip()}'")
+    
+    if account_search is not None and str(account_search).strip():
+        search_term = str(account_search).strip()
+        filtered_df = filtered_df[filtered_df['Account'].astype(str).str.contains(search_term, case=False, na=False)]
+        filter_descriptions.append(f"Account contains '{search_term}'")
+    
+    # Apply service type filter
+    if service_types_selected:
+        service_filters = []
+        for service_type in service_types_selected:
+            column_name = service_type_mapping.get(service_type, service_type)
+            if column_name in filtered_df.columns:
+                service_filter = (filtered_df[column_name].notna()) & (filtered_df[column_name] != '')
+                service_filters.append(service_filter)
+        
+        if service_filters:
+            combined_filter = service_filters[0]
+            for filter_obj in service_filters[1:]:
+                combined_filter = combined_filter | filter_obj
+            filtered_df = filtered_df[combined_filter]
+            service_labels = ", ".join(service_types_selected)
+            filter_descriptions.append(f"Service Types: {service_labels}")
+    
+    # Apply network filter
+    if selected_network and selected_network != 'ALL':
+        filtered_df = filtered_df[filtered_df['Network'] == selected_network]
+        filter_descriptions.append(f"Network = {selected_network}")
+    
+    # Apply OMS filter
+    if selected_oms and selected_oms != "ALL":
+        filtered_df = filtered_df[filtered_df['OMS'] == selected_oms]
+        filter_descriptions.append(f"OMS = {selected_oms}")
+    
+    # Apply adapter filter
+    if selected_adapter and selected_adapter != 'ALL':
+        adapter_part_to_match = selected_adapter.split('_')[1] if '_' in selected_adapter else selected_adapter
+        filtered_df = filtered_df[filtered_df['Identifier'].str.contains(adapter_part_to_match, case=False, na=False)]
+        filter_descriptions.append(f"Adapter contains '{adapter_part_to_match}'")
+
+    # Calculate statistics
+    total_clients = len(df)
+    filtered_clients = len(filtered_df)
+    
+    summary = html.Div(
+        [
+            html.Div([
+                html.Span("Showing "),
+                html.Span(f"{filtered_clients}", className="font-bold text-primary text-lg"),
+                html.Span(f" of {total_clients} total clients")
+            ], className="mb-3 font-medium"),
+            html.Div([
+                html.P("Active Filters:", className="font-medium text-gray-700 mb-1"),
+                html.Ul([html.Li(f, className="ml-4 list-disc") for f in filter_descriptions] if filter_descriptions else html.Li("None"), className="text-xs text-gray-600")
+            ])
+        ])
+    
+    return filtered_df.to_dict("records"), summary
+
+
 # Callback to open and populate the modal
 @app.callback(
     Output("row-data-modal", "style"),
     Output("row-data-modal", "className"),
     Output("modal-content-container", "children"),
+    Output("data-table", "active_cell"),
     Input("data-table", "active_cell"),
     Input("modal-close-button", "n_clicks"),
     Input("modal-close-x-button", "n_clicks"),
@@ -1640,7 +1699,8 @@ def display_row_data_in_modal(active_cell, close_clicks_main, close_clicks_x, ta
 
     # Close modal if close button is clicked
     if triggered_id in ["modal-close-button", "modal-close-x-button"]:
-        return {'display': 'none'}, "modal-overlay", []
+        return {'display': 'none'}, "modal-overlay", [], None
+
 
     # Open modal if a cell is clicked
     if triggered_id == "data-table" and active_cell:
@@ -1723,10 +1783,13 @@ def display_row_data_in_modal(active_cell, close_clicks_main, close_clicks_x, ta
         )
 
         # Use style to show the modal
-        return {'display': 'flex'}, "modal-overlay modal-open", modal_body
+        return {'display': 'flex'}, "modal-overlay modal-open", modal_body, None
+
 
     # Default case: do not change anything
-    return dash.no_update, dash.no_update, dash.no_update
+    return dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
+
 
 
 if __name__ == "__main__":

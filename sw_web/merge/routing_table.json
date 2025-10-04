@@ -1,0 +1,19 @@
+{
+  "lookupFields": [
+    "ACCOUNT",
+    "#ACCOUNT",
+    "#SENDERSUBID",
+    "#TARGETSUBID",
+    "TARGETSUBID",
+    "FIX.5847",
+    "DELIVERTOSUBID",
+    "ONBEHALFOFSUBID",
+    "CURRENCY",
+    "ETF",
+    "ONBEHALFOFCOMPID",
+    "ULFROMSESSIONNAME"
+  ],
+  "results": {
+    "FLEX17_DESK": 12
+  }
+}
