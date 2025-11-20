@@ -1,8 +1,14 @@
-[
-    "adobe.com",
-    "gemini.google.com",
-    "www.google.com",
-    "github.microsoft.com",
-    "linkedin.microsoft.com",
-    "oracal.com"
-]
+{
+  "adobe.com": [],
+  "oracal.com": [],
+  "test111.com": [],
+  "palrntir.com": [],
+  "microsoft.com": [],
+  "MSFT.COM": [
+    "github.com",
+    "microsoft.com"
+  ],
+  "GOOGLE": [
+    "goole.com"
+  ]
+}
